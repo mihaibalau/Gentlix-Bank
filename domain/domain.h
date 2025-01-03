@@ -14,4 +14,38 @@ void setMonth(Date* received_date, short received_month);
 void setYear(Date* received_date, short received_year);
 
 
+typedef struct {
+    float amount;
+    char* type;
+    char* receiver_iban;
+    char* category;
+    char* description;
+    Date date;
+} Transaction;
+
+typedef struct {
+    char* tag;
+    char* first_name;
+    char* second_name;
+    char* iban;
+    char* activity_domain;
+    char* phone;
+} Affiliate;
+
+typedef struct{
+    float main_account_balance;
+    char* tag;
+    char* first_name;
+    char* second_name;
+    char* password;
+    char* iban;
+    char* phone_number;
+    Date birthday;
+    Affiliate* affiliates;
+    Transaction* transactions;
+    int transactions_number;
+    int affiliates_number;
+} Account;
+
+
 #endif
