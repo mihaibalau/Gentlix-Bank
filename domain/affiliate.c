@@ -2,28 +2,28 @@
 #include <string.h>
 #include "domain.h"
 
-Affiliate* createAffiliate(const char* tag, const char* first_name, const char* second_name,
+Affiliate* createAffiliate(const char* tag, const char* firstName, const char* second_name,
                              const char* iban, const char* activity_domain, const char* phone) {
-    Affiliate* Affiliate = (Affiliate*)malloc(sizeof(Affiliate));
-    if (Affiliate == NULL) return NULL;
+    Affiliate* affiliate = (Affiliate*)malloc(sizeof(Affiliate));
+    if (affiliate == NULL) return NULL;
 
-    Affiliate->tag = strdup(tag);
-    Affiliate->first_name = strdup(first_name);
-    Affiliate->second_name = strdup(second_name);
-    Affiliate->iban = strdup(iban);
-    Affiliate->activity_domain = strdup(activity_domain);
-    Affiliate->phone = strdup(phone);
+    affiliate->tag = strdup(tag);
+    affiliate->firstName = strdup(firstName);
+    affiliate->secondName = strdup(second_name);
+    affiliate->iban = strdup(iban);
+    affiliate->activityDomain = strdup(activity_domain);
+    affiliate->phone = strdup(phone);
 
-    return Affiliate;
+    return affiliate;
 }
 
 void destroyAffiliate(Affiliate* Affiliate) {
     if (Affiliate == NULL) return;
     free(Affiliate->tag);
-    free(Affiliate->first_name);
-    free(Affiliate->second_name);
+    free(Affiliate->firstName);
+    free(Affiliate->secondName);
     free(Affiliate->iban);
-    free(Affiliate->activity_domain);
+    free(Affiliate->activityDomain);
     free(Affiliate->phone);
     free(Affiliate);
 }
@@ -33,11 +33,11 @@ const char* getAffiliateTag(const Affiliate* Affiliate) {
 }
 
 const char* getAffiliateFirstName(const Affiliate* Affiliate) {
-    return Affiliate->first_name;
+    return Affiliate->firstName;
 }
 
 const char* getAffiliateSecondName(const Affiliate* Affiliate) {
-    return Affiliate->second_name;
+    return Affiliate->secondName;
 }
 
 const char* getAffiliateIban(const Affiliate* Affiliate) {
@@ -45,7 +45,7 @@ const char* getAffiliateIban(const Affiliate* Affiliate) {
 }
 
 const char* getAffiliateActivityDomain(const Affiliate* Affiliate) {
-    return Affiliate->activity_domain;
+    return Affiliate->activityDomain;
 }
 
 const char* getAffiliatePhone(const Affiliate* Affiliate) {
@@ -57,14 +57,14 @@ void setAffiliateTag(Affiliate* Affiliate, const char* tag) {
     Affiliate->tag = strdup(tag);
 }
 
-void setAffiliateFirstName(Affiliate* Affiliate, const char* first_name) {
-    free(Affiliate->first_name);
-    Affiliate->first_name = strdup(first_name);
+void setAffiliateFirstName(Affiliate* Affiliate, const char* firstName) {
+    free(Affiliate->firstName);
+    Affiliate->firstName = strdup(firstName);
 }
 
 void setAffiliateSecondName(Affiliate* Affiliate, const char* second_name) {
-    free(Affiliate->second_name);
-    Affiliate->second_name = strdup(second_name);
+    free(Affiliate->secondName);
+    Affiliate->secondName = strdup(second_name);
 }
 
 void setAffiliateIban(Affiliate* Affiliate, const char* iban) {
@@ -73,8 +73,8 @@ void setAffiliateIban(Affiliate* Affiliate, const char* iban) {
 }
 
 void setAffiliateActivityDomain(Affiliate* Affiliate, const char* activity_domain) {
-    free(Affiliate->activity_domain);
-    Affiliate->activity_domain = strdup(activity_domain);
+    free(Affiliate->activityDomain);
+    Affiliate->activityDomain = strdup(activity_domain);
 }
 
 void setAffiliatePhone(Affiliate* Affiliate, const char* phone) {

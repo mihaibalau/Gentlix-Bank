@@ -2,53 +2,82 @@
 #include <string.h>
 #include "domain.h"
 
-Account* createAccount(float main_account_balance, const char* tag, const char* first_name,
+Account* createAccount(float mainAccountBalance, const char* tag, const char* firstName,
                        const char* second_name, const char* password, const char* iban,
                        const char* phone_number, Date birthday) {
     Account* account = (Account*)malloc(sizeof(Account));
     if (account == NULL) return NULL;
 
-    account->main_account_balance = main_account_balance;
+    account->mainAccountBalance = mainAccountBalance;
     account->tag = strdup(tag);
-    account->first_name = strdup(first_name);
-    account->second_name = strdup(second_name);
+    account->firstName = strdup(firstName);
+    account->secondName = strdup(second_name);
     account->password = strdup(password);
     account->iban = strdup(iban);
-    account->phone_number = strdup(phone_number);
+    account->phoneNumber = strdup(phone_number);
     account->birthday = birthday;
-    account->affiliates = NULL;
-    account->transactions = NULL;
-    account->transactions_number = 0;
-    account->affiliates_number = 0;
+
+    account->transactionsCapacity = 512;
+    account->affiliatesCapacity = 128;
+    account->userAccountsCapacity = 8;
+
+    account->affiliates = malloc(account->affiliatesCapacity * sizeof(Affiliate*));;
+    account->transactions = malloc(account->affiliatesCapacity * sizeof(Transaction *));
+    account->userAccounts = malloc(account->affiliatesCapacity * sizeof(UserAccounts *));
+
+    if (account->affiliates == NULL || account->transactions == NULL || account->userAccounts == NULL) {
+        free(account->affiliates);
+        free(account->transactions);
+        free(account->userAccounts);
+        free(account->tag);
+        free(account->firstName);
+        free(account->secondName);
+        free(account->password);
+        free(account->iban);
+        free(account->phoneNumber);
+        free(account);
+        return NULL;
+    }
+
+    account->transactionsNumber = 0;
+    account->affiliatesNumber = 0;
+    account->userAccountsNumber = 0;
 
     return account;
 }
 
 void destroyAccount(Account* account) {
     if (account == NULL) return;
+
     free(account->tag);
-    free(account->first_name);
-    free(account->second_name);
+    free(account->firstName);
+    free(account->secondName);
     free(account->password);
     free(account->iban);
-    free(account->phone_number);
+    free(account->phoneNumber);
 
-    for (int i = 0; i < account->affiliates_number; i++) {
-        destroyAffiliates(&account->affiliates[i]);
+    for (int i = 0; i < account->affiliatesNumber; i++) {
+        destroyAffiliates(account->affiliates[i]);
     }
     free(account->affiliates);
 
-    for (int i = 0; i < account->transactions_number; i++) {
-        destroyTransaction(&account->transaction[i]);
+    for (int i = 0; i < account->transactionsNumber; i++) {
+        destroyTransaction(account->transactions[i]);
     }
-    free(account->transaction);
+    free(account->transactions);
+
+    for (int i = 0; i < account->userAccountsNumber; i++) {
+        destroyUserAccount(account->userAccounts[i]);
+    }
+    free(account->userAccounts);
 
     free(account);
 }
 
+
 // Getters
 float getAccountBalance(const Account* account) {
-    return account->main_account_balance;
+    return account->mainAccountBalance;
 }
 
 const char* getAccountTag(const Account* account) {
@@ -56,11 +85,11 @@ const char* getAccountTag(const Account* account) {
 }
 
 const char* getAccountFirstName(const Account* account) {
-    return account->first_name;
+    return account->firstName;
 }
 
 const char* getAccountSecondName(const Account* account) {
-    return account->second_name;
+    return account->secondName;
 }
 
 const char* getAccountPassword(const Account* account) {
@@ -72,7 +101,7 @@ const char* getAccountIban(const Account* account) {
 }
 
 const char* getAccountPhoneNumber(const Account* account) {
-    return account->phone_number;
+    return account->phoneNumber;
 }
 
 Date getAccountBirthday(const Account* account) {
@@ -80,16 +109,33 @@ Date getAccountBirthday(const Account* account) {
 }
 
 int getAccountTransactionsNumber(const Account* account) {
-    return account->transactions_number;
+    return account->transactionsNumber;
 }
 
 int getAccountAffiliatesNumber(const Account* account) {
-    return account->affiliates_number;
+    return account->affiliatesNumber;
 }
+
+int getAccountUserAccountsNumber(const Account* account) {
+    return account->affiliatesNumber;
+}
+
+int getAccountTransactionsCapacity(const Account* account) {
+    return account->transactionsCapacity;
+}
+
+int getAccountAffiliatesCapacity(const Account* account) {
+    return account->affiliatesCapacity;
+}
+
+int getAccountUserAccountsCapacity(const Account* account) {
+    return account->affiliatesCapacity;
+}
+
 
 // Setters
 void setAccountBalance(Account* account, float balance) {
-    account->main_account_balance = balance;
+    account->mainAccountBalance = balance;
 }
 
 void setAccountTag(Account* account, const char* tag) {
@@ -97,14 +143,14 @@ void setAccountTag(Account* account, const char* tag) {
     account->tag = strdup(tag);
 }
 
-void setAccountFirstName(Account* account, const char* first_name) {
-    free(account->first_name);
-    account->first_name = strdup(first_name);
+void setAccountFirstName(Account* account, const char* firstName) {
+    free(account->firstName);
+    account->firstName = strdup(firstName);
 }
 
 void setAccountSecondName(Account* account, const char* second_name) {
-    free(account->second_name);
-    account->second_name = strdup(second_name);
+    free(account->secondName);
+    account->secondName = strdup(second_name);
 }
 
 void setAccountPassword(Account* account, const char* password) {
@@ -118,23 +164,10 @@ void setAccountIban(Account* account, const char* iban) {
 }
 
 void setAccountPhoneNumber(Account* account, const char* phone_number) {
-    free(account->phone_number);
-    account->phone_number = strdup(phone_number);
+    free(account->phoneNumber);
+    account->phoneNumber = strdup(phone_number);
 }
 
 void setAccountBirthday(Account* account, Date birthday) {
     account->birthday = birthday;
-}
-
-// Funcții pentru adăugarea și eliminarea tranzacțiilor și afiliaților
-void addTransactionToAccount(Account* account, Transaction transaction) {
-    account->transactions_number++;
-    account->transactions = realloc(account->transactions, account->transactions_number * sizeof(Transaction));
-    account->transactions[account->transactions_number - 1] = transaction;
-}
-
-void addAffiliateToAccount(Account* account, Affiliate affiliate) {
-    account->affiliates_number++;
-    account->affiliates = realloc(account->affiliates, account->affiliates_number * sizeof(Affiliate));
-    account->affiliates[account->affiliates_number - 1] = affiliate;
 }
