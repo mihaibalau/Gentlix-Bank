@@ -5,7 +5,7 @@
 
 typedef struct{
     int capacity, numberOfElements;
-    Account* accounts;
+    Account** accounts;
 }RepositoryFormat;
 
 
