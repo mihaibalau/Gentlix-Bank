@@ -1,0 +1,4 @@
+#ifndef GENTLIX_BANK_GUI_H
+#define GENTLIX_BANK_GUI_H
+
+#endif //GENTLIX_BANK_GUI_H
