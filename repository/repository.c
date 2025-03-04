@@ -73,48 +73,6 @@ int addAccountToRepository(RepositoryFormat* receivedRepository, Account* newAcc
     return 1;
 }
 
-
-
-Account* getAccountByTag(const RepositoryFormat* receivedRepository, const char* userTag) {
-    if (receivedRepository == NULL)
-        return NULL;
-
-    if (userTag == NULL)
-        return NULL;
-
-    for (int i = 0; i < receivedRepository->numberOfElements; i++) {
-        if (strcmp(getAccountTag(receivedRepository->accounts[i]), userTag) == 0) {
-            return receivedRepository->accounts[i];
-        }
-    }
-
-    return NULL;
-}
-
-int updateAccount(RepositoryFormat* receivedRepository, const char* userTag,
-                  float newBalance, const char* newFirstName, const char* newSecondName,
-                  const char* newPassword, const char* newPhoneNumber) {
-    if (receivedRepository == NULL)
-        return -51;
-
-    if (userTag == NULL)
-        return -52;
-
-    Account* userAccount = getAccountByTag(receivedRepository, userTag);
-
-    if (userAccount == NULL) {
-        return -53;
-    }
-
-    if (newBalance >= 0) setAccountBalance(userAccount, newBalance);
-    if (newFirstName != NULL) setAccountFirstName(userAccount, newFirstName);
-    if (newSecondName != NULL) setAccountSecondName(userAccount, newSecondName);
-    if (newPassword != NULL) setAccountPassword(userAccount, newPassword);
-    if (newPhoneNumber != NULL) setAccountPhoneNumber(userAccount, newPhoneNumber);
-
-    return 1;
-}
-
 int removeAccountFromRepository(RepositoryFormat* receivedRepository, const char* accountTag) {
     if (receivedRepository == NULL)
         return -51;
@@ -146,17 +104,57 @@ int removeAccountFromRepository(RepositoryFormat* receivedRepository, const char
     return 1;
 }
 
-int getRepositorySize(const RepositoryFormat* repository) {
-    if (repository == NULL) {
-        return -1;
+Account* getAccountByTag(const RepositoryFormat* receivedRepository, const char* userTag) {
+    if (receivedRepository == NULL)
+        return NULL;
+
+    if (userTag == NULL)
+        return NULL;
+
+    for (int i = 0; i < receivedRepository->numberOfElements; i++) {
+        if (strcmp(getAccountTag(receivedRepository->accounts[i]), userTag) == 0) {
+            return receivedRepository->accounts[i];
+        }
     }
-    return repository->numberOfElements;
+
+    return NULL;
 }
 
-int isRepositoryFull(const RepositoryFormat* repository) {
-    if (repository == NULL) {
+int updateAccountDetails(RepositoryFormat* receivedRepository, const char* userTag,
+                  float newBalance, const char* newFirstName, const char* newSecondName,
+                  const char* newPassword, const char* newPhoneNumber) {
+    if (receivedRepository == NULL)
+        return -61;
+
+    if (userTag == NULL)
+        return -62;
+
+    Account* userAccount = getAccountByTag(receivedRepository, userTag);
+
+    if (userAccount == NULL) {
+        return -63;
+    }
+
+    if (newBalance >= 0) setAccountBalance(userAccount, newBalance);
+    if (newFirstName != NULL) setAccountFirstName(userAccount, newFirstName);
+    if (newSecondName != NULL) setAccountSecondName(userAccount, newSecondName);
+    if (newPassword != NULL) setAccountPassword(userAccount, newPassword);
+    if (newPhoneNumber != NULL) setAccountPhoneNumber(userAccount, newPhoneNumber);
+
+    return 1;
+}
+
+int getRepositorySize(const RepositoryFormat* receivedRepository) {
+    if (receivedRepository == NULL) {
         return -1;
     }
-    return (repository->numberOfElements >= repository->capacity) ? 1 : 0;
+    return receivedRepository->numberOfElements;
+}
+
+int isRepositoryFull(const RepositoryFormat* receivedRepository) {
+    if (receivedRepository == NULL) {
+        return -1;
+    }
+    return (receivedRepository->numberOfElements >= receivedRepository->capacity) ? 1 : 0;
 }
 
