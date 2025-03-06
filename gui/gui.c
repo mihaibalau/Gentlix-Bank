@@ -9,7 +9,8 @@
 void show_new_transaction_interface(GtkWidget *widget, gpointer data) {
 
     GtkWidget *new_transaction_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    last_window = new_transaction_window;
+    g_object_set_data(G_OBJECT(app), "last_window", new_transaction_window);
+
     gtk_window_set_default_icon_from_file("images/bank_icon.png", NULL);
     gtk_window_set_title(GTK_WINDOW(new_transaction_window), "GentlixBank - Application");
     gtk_window_set_default_size(GTK_WINDOW(new_transaction_window), 800, 1000);
@@ -159,7 +160,8 @@ void show_new_transaction_interface(GtkWidget *widget, gpointer data) {
 void show_all_transactions_interface(GtkWidget *widget, gpointer data) {
 
     GtkWidget *all_transactions_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    last_window = all_transactions_window;
+    g_object_set_data(G_OBJECT(app), "last_window", all_transactions_window);
+
     gtk_window_set_default_icon_from_file("images/bank_icon.png", NULL);
     gtk_window_set_title(GTK_WINDOW(all_transactions_window), "GentlixBank - Application");
     gtk_window_set_default_size(GTK_WINDOW(all_transactions_window), 800, 1000);
@@ -325,7 +327,8 @@ void show_all_transactions_interface(GtkWidget *widget, gpointer data) {
 void show_edit_account_interface(GtkApplication *app, gpointer data){
 
     GtkWidget *edit_account_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    last_window = edit_account_window;
+    g_object_set_data(G_OBJECT(app), "last_window", edit_account_window);
+
     gtk_window_set_default_icon_from_file("images/bank_icon.png", NULL);
     gtk_window_set_title(GTK_WINDOW(edit_account_window), "GentlixBank - Application");
     gtk_window_set_default_size(GTK_WINDOW(edit_account_window), 800, 1000);
@@ -623,7 +626,8 @@ void show_account_interface() {
 void show_login_interface(GtkWidget *widget, gpointer data) {
 
     GtkWidget *login_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    last_window = login_window;
+    g_object_set_data(G_OBJECT(app), "last_window", login_window);
+
     gtk_window_set_default_icon_from_file("images/bank_icon.png", NULL);
     gtk_window_set_title(GTK_WINDOW(login_window), "GentlixBank - Application");
     gtk_window_set_default_size(GTK_WINDOW(login_window), 800, 1000);
@@ -760,7 +764,8 @@ void show_login_interface(GtkWidget *widget, gpointer data) {
 void show_register_interface(GtkWidget *widget, gpointer data) {
 
     GtkWidget *register_window = gtk_window_new(GTK_WINDOW_TOPLEVEL); // Create a new window for register interface
-    last_window = register_window; // The window is saved in a global variable to be able from any to destory it
+    g_object_set_data(G_OBJECT(app), "last_window", register_window); // Store the register window in the GtkApplication
+
     gtk_window_set_default_icon_from_file("images/bank_icon.png", NULL);
     gtk_window_set_title(GTK_WINDOW(register_window), "GentlixBank - Application");
     gtk_window_set_default_size(GTK_WINDOW(register_window), 800, 1000);
@@ -974,7 +979,8 @@ void activate_main_menu(GtkApplication *app, gpointer data) {
 
     // More about app layout and format inside the documentation file
     GtkWidget * main_window = gtk_application_window_new(app); // The main_window with main menu for app
-    main_menu = main_window;  // The main main_window is saved in a global variable to be able from any function to show or hide it
+    g_object_set_data(G_OBJECT(app), "main_window", main_window); // The main main_window is saved in a global variable to be able from any function to show or hide it
+
     gtk_window_set_default_icon_from_file("images/bank_icon.png", NULL);
     gtk_window_set_title(GTK_WINDOW(main_window), "GentlixBank - Application");
     gtk_window_set_default_size(GTK_WINDOW(main_window), 800, 1000);

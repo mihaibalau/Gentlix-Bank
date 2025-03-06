@@ -19,6 +19,7 @@ int updateAccountDetails(RepositoryFormat* receivedRepository, const char* userT
 Account* getAccountByTag(const RepositoryFormat* receivedRepository, const char* userTag);
 int getRepositorySize(const RepositoryFormat* receivedRepository);
 int isRepositoryFull(const RepositoryFormat* receivedRepository);
+int accountTagUsedRepo(const RepositoryFormat* receivedRepository, const char *checked_tag);
 
 
 

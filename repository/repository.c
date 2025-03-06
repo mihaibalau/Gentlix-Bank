@@ -64,7 +64,15 @@ int addAccountToRepository(RepositoryFormat* receivedRepository, Account* newAcc
         return -42;
 
     if (receivedRepository->numberOfElements >= receivedRepository->capacity) {
-        return -43;
+        int newCapacity = receivedRepository->capacity * 2;
+        Account** newAccounts = (Account**)realloc(receivedRepository->accounts, newCapacity * sizeof(Account*));
+
+        if (newAccounts == NULL) {
+            return -43;
+        }
+
+        receivedRepository->accounts = newAccounts;
+        receivedRepository->capacity = newCapacity;
     }
 
     receivedRepository->accounts[receivedRepository->numberOfElements] = newAccount;
@@ -156,5 +164,12 @@ int isRepositoryFull(const RepositoryFormat* receivedRepository) {
         return -1;
     }
     return (receivedRepository->numberOfElements >= receivedRepository->capacity) ? 1 : 0;
+}
+
+int accountTagUsedRepo(const RepositoryFormat* receivedRepository, const char *checked_tag){
+    for(int index = 0; index < receivedRepository->numberOfElements; index++)
+        if(strcmp(checked_tag, getAccountTag(receivedRepository->accounts[index])))
+            return 1;
+    return 0;
 }
 
