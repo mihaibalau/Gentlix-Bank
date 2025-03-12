@@ -5,7 +5,6 @@
 RepositoryFormat* createRepository(){
 
     int defaultCapacity = 20;
-    if (maximumCapacity <= 0) return NULL;
 
     RepositoryFormat* newRepository = malloc(sizeof(RepositoryFormat));
     if(newRepository == NULL)
