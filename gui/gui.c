@@ -1,6 +1,8 @@
 #include "gui.h"
 #include <gtk/gtk.h>
 
+Account* currentAccount = NULL;
+
 // Manage the inputs from new transaction interface and work with them inside the memory to add money in user account
 // GtkApplication *app - isn't used inside the function but is required from previous gtk function call
 // gpointer data - provides the location inside the memory for inputs
@@ -218,13 +220,13 @@ void make_a_payment(GtkWidget *widget, gpointer data){
 }
 
 void logout_from_an_account(){
-    current_account = -1;
+    currentAccount = NULL;
 }
 
 void delete_an_account(){
     for(int index = current_account; index < accounts_number; index++)
         account_database[index] = account_database[index + 1];
-    current_account = -1;
+    currentAccount = NULL;
     accounts_number--;
 }
 
@@ -322,34 +324,34 @@ void login_to_an_account(GtkApplication *app, gpointer data){
     GtkWidget **entries = (GtkWidget **)data;
     const gchar *account_tag = gtk_entry_get_text(GTK_ENTRY(entries[0]));
     const gchar *account_password = gtk_entry_get_text(GTK_ENTRY(entries[1]));
+    g_free(entries);
 
     short error_encountered = 0;
     if(strlen(account_tag) > 20){
         error_encountered = 1;
-        show_error("Account tag input is too long! Maximum 20 characters.");}
+        show_error("Imputed account tag is too long! Maximum 20 characters.");}
     else if(strlen(account_password) > 32){
         error_encountered = 1;
-        show_error("Inputed password is too long! Maximum 32 characters.");}
-    else if(!string_have_only_letters(account_tag)){
+        show_error("Imputed password is too long! Maximum 32 characters.");}
+
+    else if(!stringOnlyWithLetters(account_tag)){
         error_encountered = 1;
         show_error("Account tag can have only letters!");}
 
-    if(!error_encountered){ // Check the usertag in databse only if respect the input conditions
-        short account_found = 0;
-        for(int index = 0; index < accounts_number; index++){
-            if(strcmp(account_tag, account_database[index].tag) == 0){
-                account_found = 1;
-                if(strcmp(account_password,account_database[index].password) == 0) {
-                    current_account = index;
-                    gtk_widget_destroy(last_window);
-                    show_account_interface();
-                }
-                else
-                    show_error("Wrong password!");
-            }
+    if(!error_encountered){
+        RepositoryFormat* database = g_object_get_data(G_OBJECT(app), "database");
+        Account* loggedAccount = loginService(database, account_tag, account_password);
+
+        if(loggedAccount != NULL) {
+
+            GtkWidget *login_window = g_object_get_data(G_OBJECT(app), "last_window");
+            gtk_widget_destroy(login_window);
+
+            currentAccount = loggedAccount;
+            show_account_interface();
+        } else {
+            show_error("Invalid account tag or password!");
         }
-        if(!account_found)
-            show_error("Account tag can't be find!");
     }
 }
 
@@ -1160,18 +1162,18 @@ void show_login_interface(GtkWidget *widget, gpointer data) {
     gtk_entry_set_width_chars(GTK_ENTRY(entries[1]), 50);
     gtk_grid_attach(GTK_GRID(grid), entries[1], 3, 0, 1, 1);
 
-    GtkWidget *blanck_label = gtk_label_new(" \n");
-    gtk_label_set_attributes(GTK_LABEL(blanck_label), attr_list_text);
+    GtkWidget *blank_label = gtk_label_new(" \n");
+    gtk_label_set_attributes(GTK_LABEL(blank_label), attr_list_text);
 
-    GtkWidget *blanck_label2 = gtk_label_new(" \n");
-    gtk_label_set_attributes(GTK_LABEL(blanck_label), attr_list_text);
+    GtkWidget *blank_label2 = gtk_label_new(" \n");
+    gtk_label_set_attributes(GTK_LABEL(blank_label), attr_list_text);
 
-    GtkWidget *blanck_label3 = gtk_label_new(" \n");
-    gtk_label_set_attributes(GTK_LABEL(blanck_label), attr_list_text);
+    GtkWidget *blank_label3 = gtk_label_new(" \n");
+    gtk_label_set_attributes(GTK_LABEL(blank_label), attr_list_text);
 
-    gtk_grid_attach(GTK_GRID(grid), blanck_label, 0, 2, 2, 1);
-    gtk_grid_attach(GTK_GRID(grid), blanck_label2, 0, 3, 2, 1);
-    gtk_grid_attach(GTK_GRID(grid), blanck_label3, 0, 4, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), blank_label, 0, 2, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), blank_label2, 0, 3, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), blank_label3, 0, 4, 2, 1);
 
     GtkWidget *login_button = gtk_button_new_with_label("Login");
     GtkWidget *close_button = gtk_button_new_with_label("Close");

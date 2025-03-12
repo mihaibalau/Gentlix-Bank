@@ -174,3 +174,19 @@ int accountTagUsedRepo(const RepositoryFormat* receivedRepository, const char *c
     return 0;
 }
 
+Account* loginRepository(RepositoryFormat* repository, const char* username, const char* password) {
+    if (repository == NULL || username == NULL || password == NULL) {
+        return NULL; // Invalid input
+    }
+
+    for (int i = 0; i < repository->numberOfElements; i++) {
+        Account* account = repository->accounts[i];
+        if (strcmp(getAccountTag(account), username) == 0 && strcmp(getAccountPassword(account), password) == 0) {
+            return account; // Credentials match
+        }
+    }
+
+    return NULL; // No matching account found
+}
+
+

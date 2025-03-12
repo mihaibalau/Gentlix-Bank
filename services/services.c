@@ -170,6 +170,14 @@ int removeAnUserAccount(Account* account, const char* userAccountType) {
     return 1;
 }
 
+//void displayUserAccounts(Account* account) {
+//    for (int i = 0; i < account->userAccountsNumber; i++) {
+//        UserAccounts* userAccount = account->userAccounts[i];
+//        // Display user account details here, e.g., type, balance
+//        printf("Type: %s, Balance: %.2f\n", userAccount->type, userAccount->accountBalance);
+//    }
+//}
+
 ////////////////////
 //
 //  Check functions
@@ -349,13 +357,15 @@ int validDateForTransaction(const gchar *day, const gchar *month, const gchar *y
 //
 ////////////////////
 
-//void displayUserAccounts(Account* account) {
-//    for (int i = 0; i < account->userAccountsNumber; i++) {
-//        UserAccounts* userAccount = account->userAccounts[i];
-//        // Display user account details here, e.g., type, balance
-//        printf("Type: %s, Balance: %.2f\n", userAccount->type, userAccount->accountBalance);
-//    }
-//}
+
+Account* loginService(RepositoryFormat* repository, const char* username, const char* password) {
+    if (repository == NULL || username == NULL || password == NULL) {
+        return NULL; // Invalid input
+    }
+
+    return loginRepository(repository, username, password);
+}
+
 
 // getTransactions
 // getAccountStatement
