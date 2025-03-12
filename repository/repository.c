@@ -2,17 +2,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-RepositoryFormat* createRepository(int maximumCapacity){
+RepositoryFormat* createRepository(){
+
+    int defaultCapacity = 20;
     if (maximumCapacity <= 0) return NULL;
 
     RepositoryFormat* newRepository = malloc(sizeof(RepositoryFormat));
     if(newRepository == NULL)
         return NULL;
 
-    newRepository->capacity = maximumCapacity;
+    newRepository->capacity = defaultCapacity;
     newRepository->numberOfElements = 0;
 
-    newRepository->accounts = malloc(sizeof(Account*) * maximumCapacity);
+    newRepository->accounts = malloc(sizeof(Account*) * defaultCapacity);
     if(newRepository->accounts == NULL) {
         free(newRepository);
         return NULL;

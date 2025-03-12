@@ -8,9 +8,8 @@ int main(int argc, char *argv[]) {
 
     GtkApplication * mainApplication;
     int applicationStatus;
-    int maximumNumberOfUsers = 50;
 
-    RepositoryFormat* database = createRepository(maximumNumberOfUsers);
+    RepositoryFormat* database = createRepository();
 
     mainApplication = gtk_application_new("com.bank.GentlixBank", G_APPLICATION_FLAGS_NONE);
     g_object_set_data(G_OBJECT(mainApplication), "database", database);

@@ -8,7 +8,7 @@ typedef struct{
     Account** accounts;
 }RepositoryFormat;
 
-RepositoryFormat* createRepository(int maximumCapacity);
+RepositoryFormat* createRepository();
 int destroyRepository(RepositoryFormat* receivedRepository);
 int resizeRepository(RepositoryFormat* receivedRepository, int newCapacity);
 int addAccountToRepository(RepositoryFormat* receivedRepository, Account* newAccount);
