@@ -412,6 +412,7 @@ int loginService(RepositoryFormat* repository, const char* username, const char*
         return -306; // Account tag can have only letters!
 
     *loggedUser = loginRepository(repository, username, password);
+    return 1;
 }
 
 int createAccountService(RepositoryFormat* repository, const char* accountTag, const char* password, const char* passwordConfirm, const char* accountType, const char* phoneNumber,

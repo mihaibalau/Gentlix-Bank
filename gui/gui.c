@@ -3,6 +3,105 @@
 
 Account* currentAccount = NULL;
 
+void handleErrorCode(int errorCode) {
+
+    switch (resultCode) {
+        case -301:
+            show_error("Internal problem with program database.");
+            break;
+        case -302:
+            show_error("Missing username input.");
+            break;
+        case -303:
+            show_error("Missing the password for your account.");
+            break;
+        case -304:
+            show_error("Imputed account tag is too long! Maximum 20 characters.");
+            break;
+        case -305:
+            show_error("Imputed password is too long! Maximum 32 characters.");
+            break;
+        case -306:
+            show_error("Account tag can have only letters!");
+            break;
+        case -311:
+            show_error("Repository is NULL.");
+            break;
+        case -312:
+            show_error("Missing account tag input.");
+            break;
+        case -313:
+            show_error("Missing password input.");
+            break;
+        case -314:
+            show_error("Missing password confirmation input.");
+            break;
+        case -315:
+            show_error("Missing account type input.");
+            break;
+        case -316:
+            show_error("Missing phone number input.");
+            break;
+        case -317:
+            show_error("Missing first name input.");
+            break;
+        case -318:
+            show_error("Missing second name input.");
+            break;
+        case -319:
+            show_error("Missing day input.");
+            break;
+        case -320:
+            show_error("Missing month input.");
+            break;
+        case -321:
+            show_error("Missing year input.");
+            break;
+        case -322:
+            show_error("Account tag already used.");
+            break;
+        case -323:
+            show_error("Invalid birthday.");
+            break;
+        case -324:
+            show_error("Account tag can have only letters!");
+            break;
+        case -325:
+            show_error("The passwords do not match!");
+            break;
+        case -326:
+            show_error("Invalid account type! Available types: savings, checking, credit.");
+            break;
+        case -327:
+            show_error("First name can have only letters!");
+            break;
+        case -328:
+            show_error("Second name can have only letters!");
+            break;
+        case -329:
+            show_error("Phone number can have only digits!");
+            break;
+        case -330:
+            show_error("Failed to create an account.");
+            break;
+        case -331:
+            show_error("Failed to add account to repository.");
+            break;
+        case -332:
+            show_error("Failed to create user account.");
+            break;
+        case -233:
+            show_error("User account already exists.");
+            break;
+        case -234:
+            show_error("Memory reallocation failed for user accounts.");
+            break;
+        default:
+            show_error("An unexpected error occurred.");
+            break;
+    }
+}
+
 // Manage the inputs from new transaction interface and work with them inside the memory to add money in user account
 // GtkApplication *app - isn't used inside the function but is required from previous gtk function call
 // gpointer data - provides the location inside the memory for inputs
@@ -333,37 +432,17 @@ void login_to_an_account(GtkApplication *app, gpointer data){
 
     if(loggedAccount != NULL) {
 
-        GtkWidget *login_window = g_object_get_data(G_OBJECT(app), "last_window");
-        gtk_widget_destroy(login_window);
+        GtkWidget *last_window = g_object_get_data(G_OBJECT(app), "last_window");
+        gtk_widget_destroy(last_window);
 
         currentAccount = loggedAccount;
         show_account_interface();
 
     } else {
-
-        switch (resultCode) {
-            case -301:
-                show_error("Internal problem with program database.");
-                break;
-            case -302:
-                show_error("Missing username input.");
-                break;
-            case -303:
-                show_error("Missing the password for your account.");
-                break;
-            case -304:
-                show_error("Imputed account tag is too long! Maximum 20 characters.");
-                break;
-            case -305:
-                show_error("Imputed password is too long! Maximum 32 characters.");
-                break;
-            case -306:
-                show_error("Account tag can have only letters!");
-                break;
-            default:
-                show_error("Invalid account tag or password!");
-                break;
-        }
+        if (resultCode == 1)
+            show_error("Incorrect username or password!");
+        else
+            handleErrorCode(resultCode);
     }
 }
 
@@ -391,27 +470,16 @@ void create_an_account(GtkApplication *app, gpointer data){
     int resultCode = createAccountService(database, account_tag, account_password, account_password2, account_type, user_phone_number, user_first_name, user_second_name,
                                   user_birthday_day, user_birthday_month, user_birthday_year, loggedAccount);
 
+    if(loggedAccount != NULL) {
 
-    if(!error_encountered){
-        g_strlcpy(account_database[accounts_number].tag, account_tag, sizeof(account_database[accounts_number].tag));
-        g_strlcpy(account_database[accounts_number].password, account_password, sizeof(account_database[accounts_number].password));
-        g_strlcpy(account_database[accounts_number].type, account_type, sizeof(account_database[accounts_number].type));
-        g_strlcpy(account_database[accounts_number].phone_number, user_phone_number, sizeof(account_database[accounts_number].phone_number));
-        g_strlcpy(account_database[accounts_number].first_name, user_first_name, sizeof(account_database[accounts_number].first_name));
-        g_strlcpy(account_database[accounts_number].second_name, user_second_name, sizeof(account_database[accounts_number].second_name));
-
-        guint64 int_day = g_ascii_strtoull(user_birthday_day, NULL, 10);
-        guint64 int_month = g_ascii_strtoull(user_birthday_month, NULL, 10);
-        guint64 int_year = g_ascii_strtoull(user_birthday_year, NULL, 10);
-
-        account_database[accounts_number].birthday.day = int_day;
-        account_database[accounts_number].birthday.month = int_month;
-        account_database[accounts_number].birthday.year = int_year;
-
-        current_account = accounts_number;
-        accounts_number++;
+        GtkWidget *last_window = g_object_get_data(G_OBJECT(app), "last_window");
         gtk_widget_destroy(last_window);
+
+        currentAccount = loggedAccount;
         show_account_interface();
+
+    } else {
+        handleErrorCode(resultCode);
     }
 }
 
