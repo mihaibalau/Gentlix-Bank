@@ -59,9 +59,6 @@ int addAffiliateToAccount(Account* account, Affiliate* newAffiliate) {
         Affiliate** newAffiliates = realloc(account->affiliates, newCapacity * sizeof(Affiliate*));
         if (newAffiliates == NULL) {
             return -214; // Memory reallocation failed
-
-            destroyUserAccount(newUserAccount);
-            free(newUserAccount);
         }
         account->affiliates = newAffiliates;
         account->affiliatesCapacity = newCapacity;
@@ -465,6 +462,7 @@ int createAccountService(RepositoryFormat* repository, const char* accountTag, c
     Date birthday = createDate(atoi(day), atoi(month), atoi(year));
 
     char iban[30];
+    char* uniqueIBAN;
     while (1) {
         generateRandomIBAN(iban);
         if (!ibanUsedInRepository(repository, iban)) {
@@ -503,7 +501,7 @@ int createAccountService(RepositoryFormat* repository, const char* accountTag, c
         return resultCode; // Failed to add user account
     }
 
-    loggedAccount = newAccount;
+    *loggedAccount = newAccount;
 }
 
 // getTransactions
