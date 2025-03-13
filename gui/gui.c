@@ -326,31 +326,43 @@ void login_to_an_account(GtkApplication *app, gpointer data){
     const gchar *account_password = gtk_entry_get_text(GTK_ENTRY(entries[1]));
     g_free(entries);
 
-    short error_encountered = 0;
-    if(strlen(account_tag) > 20){
-        error_encountered = 1;
-        show_error("Imputed account tag is too long! Maximum 20 characters.");}
-    else if(strlen(account_password) > 32){
-        error_encountered = 1;
-        show_error("Imputed password is too long! Maximum 32 characters.");}
+    RepositoryFormat* database = g_object_get_data(G_OBJECT(app), "database");
+    Account* loggedAccount = NULL;
 
-    else if(!stringOnlyWithLetters(account_tag)){
-        error_encountered = 1;
-        show_error("Account tag can have only letters!");}
+    int resultCode = loginService(database, account_tag, account_password, loggedAccount);
 
-    if(!error_encountered){
-        RepositoryFormat* database = g_object_get_data(G_OBJECT(app), "database");
-        Account* loggedAccount = loginService(database, account_tag, account_password);
+    if(loggedAccount != NULL) {
 
-        if(loggedAccount != NULL) {
+        GtkWidget *login_window = g_object_get_data(G_OBJECT(app), "last_window");
+        gtk_widget_destroy(login_window);
 
-            GtkWidget *login_window = g_object_get_data(G_OBJECT(app), "last_window");
-            gtk_widget_destroy(login_window);
+        currentAccount = loggedAccount;
+        show_account_interface();
 
-            currentAccount = loggedAccount;
-            show_account_interface();
-        } else {
-            show_error("Invalid account tag or password!");
+    } else {
+
+        switch (resultCode) {
+            case -301:
+                show_error("Internal problem with program database.");
+                break;
+            case -302:
+                show_error("Missing username input.");
+                break;
+            case -303:
+                show_error("Missing the password for your account.");
+                break;
+            case -304:
+                show_error("Imputed account tag is too long! Maximum 20 characters.");
+                break;
+            case -305:
+                show_error("Imputed password is too long! Maximum 32 characters.");
+                break;
+            case -306:
+                show_error("Account tag can have only letters!");
+                break;
+            default:
+                show_error("Invalid account tag or password!");
+                break;
         }
     }
 }
@@ -371,54 +383,14 @@ void create_an_account(GtkApplication *app, gpointer data){
     const gchar *user_birthday_day = gtk_entry_get_text(GTK_ENTRY(entries[7]));
     const gchar *user_birthday_month = gtk_entry_get_text(GTK_ENTRY(entries[8]));
     const gchar *user_birthday_year = gtk_entry_get_text(GTK_ENTRY(entries[9]));
+    g_free(entries);
 
-    short error_encountered = 0;
-    if(accounts_number >= 50){
-        show_error("The database can't support more users!");
-        error_encountered = 1;}
-    else if(strlen(account_tag) > 20 || strlen(account_tag) == 0){
-        error_encountered = 1;
-        show_error("Account tag input is too long or dosen't exist! Maximum 20 characters.");}
-    else if(strlen(account_password) > 32 || strlen(account_password) == 0){
-        error_encountered = 1;
-        show_error("Inputed password is too long or dosen't exist! Maximum 32 characters.");}
-    else if(strlen(account_password2) > 32 || strlen(account_password2) == 0){
-        show_error("Inputed confirm password is too long  or dosen't exist! Maximum 32 characters.");}
-    else if(strlen(account_type) > 16 || strlen(account_type) == 0){
-        error_encountered = 1;
-        show_error("Inputed account type is too long or dosen't exist!\nAvailable types: savings, checking, credit.");}
-    else if(strlen(user_phone_number) > 11 || strlen(user_phone_number) == 0){
-        error_encountered = 1;
-        show_error("Inputed phone number type is too long or dosen't exist! Maximum 11 characters.");}
-    else if(strlen(user_first_name) > 16 || strlen(user_first_name) == 0){
-        error_encountered = 1;
-        show_error("Inputed first name type is too long or dosen't exist! Maximum 16 characters.");}
-    else if(strlen(user_second_name) > 16 || strlen(user_second_name) == 0 ){
-        error_encountered = 1;
-        show_error("Inputed second name type is too long or dosen't exist! Maximum 16 characters.");}
-    else if(account_tag_is_used(account_tag)){
-        error_encountered = 1;
-        show_error("This account tag is already in use!");}
-    else if(!string_have_only_letters(account_tag)){
-        error_encountered = 1;
-        show_error("Account tag can have only letters!");}
-    else if(password_differ(account_password, account_password2)){
-        error_encountered = 1;
-        show_error("The passwords do not match!");}
-    else if(!available_account_type(account_type)){
-        error_encountered = 1;
-        show_error("Invalid account type!\nAvailable types: savings, checking, credit.");}
-    else if(!string_have_only_letters(user_first_name)){
-        error_encountered = 1;
-        show_error("First name can have only letters!");}
-    else if(!string_have_only_letters(user_second_name)){
-        error_encountered = 1;
-        show_error("Second name can have only letters!");}
-    else if(!stringHaveOnlyDigits(user_phone_number)){
-        error_encountered = 1;
-        show_error("Phone number can have only digits!");}
-    else
-        error_encountered = check_available_date(user_birthday_day, user_birthday_month, user_birthday_year);
+    RepositoryFormat* database = g_object_get_data(G_OBJECT(app), "database");
+    Account* loggedAccount = NULL;
+
+    int resultCode = createAccountService(database, account_tag, account_password, account_password2, account_type, user_phone_number, user_first_name, user_second_name,
+                                  user_birthday_day, user_birthday_month, user_birthday_year, loggedAccount);
+
 
     if(!error_encountered){
         g_strlcpy(account_database[accounts_number].tag, account_tag, sizeof(account_database[accounts_number].tag));

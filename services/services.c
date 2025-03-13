@@ -59,6 +59,9 @@ int addAffiliateToAccount(Account* account, Affiliate* newAffiliate) {
         Affiliate** newAffiliates = realloc(account->affiliates, newCapacity * sizeof(Affiliate*));
         if (newAffiliates == NULL) {
             return -214; // Memory reallocation failed
+
+            destroyUserAccount(newUserAccount);
+            free(newUserAccount);
         }
         account->affiliates = newAffiliates;
         account->affiliatesCapacity = newCapacity;
@@ -116,6 +119,7 @@ int addNewUserAccount(Account* account, UserAccounts* newUserAccount) {
 
     if (newUserAccount == NULL)
         return -232; // Invalid user account
+
 
     for (int i = 0; i < account->userAccountsNumber; i++) {
         if (strcmp(getUserAccountType(account->userAccounts[i]), getUserAccountType(newUserAccount)) == 0) {
@@ -184,42 +188,52 @@ int removeAnUserAccount(Account* account, const char* userAccountType) {
 //
 ////////////////////
 
-int accountTagUsed(const RepositoryFormat* receivedRepository, const gchar *checkedTag){
+short accountTagUsed(const RepositoryFormat* receivedRepository, const gchar *checkedTag){
     const char *charString = checkedTag;
     return accountTagUsedRepo(receivedRepository, charString);
 }
 
-int stringOnlyWithLetters(const gchar *checkedString){
-    char normalString[20];
-    g_strlcpy(normalString, checkedString, sizeof(normalString)); // copy the char allocated dynamic in normal one to be checked
-    size_t length = strlen(normalString);
-    for(int index = 0; index < length; index++)
-        if(normalString[index] < 'A' || normalString[index] > 'z')
-            return 0;
-    return 1;
+short stringOnlyWithLetters(const gchar *checkedString) {
+    if (checkedString == NULL || *checkedString == '\0')
+        return 0;  // Empty or NULL string is invalid
+
+    size_t length = strlen(checkedString);
+    for (size_t index = 0; index < length; index++) {
+        if ((checkedString[index] < 'A' || checkedString[index] > 'z') ||
+            (checkedString[index] > 'Z' && checkedString[index] < 'a')) {
+            return 0;  // Not a letter (excluding ASCII gaps)
+        }
+    }
+    return 1;  // Valid string
 }
 
-int stringOnlyWithDigitsExtended(const gchar *checkedString){ // extended means can have also . and , for float numbers
-    char normalString[11];
-    g_strlcpy(normalString, checkedString, sizeof(normalString)); // copy the char allocated dynamic in normal one to be checked
-    size_t length = strlen(normalString);
-    for(int index = 0; index < length; index++)
-        if((normalString[index] < '0' || normalString[index] > '9') && normalString[index] != ',' && normalString[index] != '.')
-            return 0;
-    return 1;
+short stringOnlyWithDigitsExtended(const gchar *checkedString) {
+    if (checkedString == NULL || *checkedString == '\0')
+        return 0;  // Empty or NULL string is invalid
+
+    for (size_t index = 0; checkedString[index] != '\0'; index++) {
+        if ((checkedString[index] < '0' || checkedString[index] > '9') &&
+            checkedString[index] != ',' && checkedString[index] != '.') {
+            return 0;  // Not a digit, period, or comma
+        }
+    }
+    return 1;  // Valid string
 }
 
-int stringOnlyWithDigits(const gchar *checkedString){
-    char normalString[11];
-    g_strlcpy(normalString, checkedString, sizeof(normalString)); // copy the char allocated dynamic in normal one to be checked
-    size_t length = strlen(normalString);
-    for(int index = 0; index < length; index++)
-        if(normalString[index] < '0' || normalString[index] > '9')
-            return 0;
-    return 1;
+
+short stringOnlyWithDigits(const gchar *checkedString) {
+    if (checkedString == NULL || *checkedString == '\0')
+        return 0;  // Empty or NULL string is invalid
+
+    for (size_t index = 0; checkedString[index] != '\0'; index++) {
+        if (checkedString[index] < '0' || checkedString[index] > '9') {
+            return 0;  // Not a digit
+        }
+    }
+    return 1;  // Valid string
 }
 
-int differentPassword(const gchar *password1, const gchar *password2){
+short differentPassword(const gchar *password1, const gchar *password2){
     if(strcmp(password1, password2))
         return 1;
     return 0;
@@ -228,13 +242,13 @@ int differentPassword(const gchar *password1, const gchar *password2){
 short validDateWithBypass(const gchar *day, const gchar *month, const gchar *year){ // bypass means you can leave the fields blank
 
     if(!stringOnlyWithDigits(day)){
-        return 101; // The day need to be a number!
+        return -101; // The day need to be a number!
     }
     else if(!stringOnlyWithDigits(month)){
-        return 102; // The month need to be a number!
+        return -102; // The month need to be a number!
     }
     else if(!stringOnlyWithDigits(year)){
-        return 103; // The year need to be a number
+        return -103; // The year need to be a number
     }
 
     guint64 intDay = g_ascii_strtoull(day, NULL, 10); // transform a string formatted from digits to an integer
@@ -243,27 +257,27 @@ short validDateWithBypass(const gchar *day, const gchar *month, const gchar *yea
 
     if(strlen(year) != 0) {
         if (intYear < 1700) {
-            return 104; // The entered year is far too far away!
+            return -104; // The entered year is far too far away!
         } else if (intYear > 2006) {
-            return 105; // You do not have a minimum age to open an account!
+            return -105; // You do not have a minimum age to open an account!
         }
     }
 
     if(strlen(month) != 0) {
         if (intMonth < 1 || intMonth > 12) {
-            return 106; // The month does not exist!
+            return -106; // The month does not exist!
         }
     }
 
     if(strlen(day) != 0) {
         if (intDay < 1 || intDay > 31) {
-            return 107; // The day does not exist!
+            return -107; // The day does not exist!
         } else if (intDay == 31 && (intMonth == 2 || intMonth == 4 || intMonth == 6 || intMonth == 9 || intMonth == 11)) {
-            return 108; // This month has only 30 days!
+            return -108; // This month has only 30 days!
         } else if (intDay == 30 && intMonth == 2) {
-            return 109; // The month can have a maximum of 29 days!
+            return -109; // The month can have a maximum of 29 days!
         } else if (intDay == 29 && intMonth == 2 && intYear % 4 != 0) {
-            return 110; // "The year February has a maximum of 28 days!"
+            return -110; // "The year February has a maximum of 28 days!"
         }
     }
 
@@ -273,71 +287,71 @@ short validDateWithBypass(const gchar *day, const gchar *month, const gchar *yea
 short validDate(const gchar *day, const gchar *month, const gchar *year){ // available date means it is valid inside the calendar
 
     if(!stringOnlyWithDigits(day))
-        return 121; // The day need to be a number!
+        return -121; // The day need to be a number!
 
     else if(!stringOnlyWithDigits(month))
-        return 122; // The month need to be a number!
+        return -122; // The month need to be a number!
 
     else if(!stringOnlyWithDigits(year))
-        return 123; // The year need to be a number!
+        return -123; // The year need to be a number!
 
     guint64 intDay = g_ascii_strtoull(day, NULL, 10); // transform a string formatted from digits to an integer
     guint64 intMonth = g_ascii_strtoull(month, NULL, 10); // this function is from gtk input options
     guint64 intYear = g_ascii_strtoull(year, NULL, 10);
 
     if(intYear < 1700)
-        return 124; // The entered year is far too far away!
+        return -124; // The entered year is far too far away!
 
     else if(intYear > 2006)
-        return 125; // You do not have a minimum age to open an account
+        return -125; // You do not have a minimum age to open an account
 
     if(intMonth < 1 || intMonth > 12)
-        return 126; // The month does not exist!
+        return -126; // The month does not exist!
 
     if(intDay < 1 || intDay > 31)
-        return 127; // The day does not exist!
+        return -127; // The day does not exist!
 
     else if(intDay == 31 && (intMonth == 2 || intMonth == 4 || intMonth == 6 || intMonth == 9 || intMonth == 11) )
-        return 128; // The month has only 30 days!
+        return -128; // The month has only 30 days!
 
     else if(intDay == 30 && intMonth == 2)
-        return 129; // The month can have a maximum of 29 days!
+        return -129; // The month can have a maximum of 29 days!
 
     else if(intDay == 29 && intMonth == 2 && intYear % 4 != 0)
-        return 130; // The year February has a maximum of 28 days!
+        return -130; // The year February has a maximum of 28 days!
 
     return 1;
 }
 
 
-int validDateForTransaction(const gchar *day, const gchar *month, const gchar *year, const Account* account) {
+short validDateForTransaction(const gchar *day, const gchar *month, const gchar *year, const Account* account) {
     if (!stringOnlyWithDigits(day))
-        return 141; // The day needs to be a number!
+        return -141; // The day needs to be a number!
     else if (!stringOnlyWithDigits(month))
-        return 142; // The month needs to be a number!
+        return -142; // The month needs to be a number!
     else if (!stringOnlyWithDigits(year))
-        return 143; // The year needs to be a number!
+        return -143; // The year needs to be a number!
 
     guint64 intDay = g_ascii_strtoull(day, NULL, 10);
     guint64 intMonth = g_ascii_strtoull(month, NULL, 10);
     guint64 intYear = g_ascii_strtoull(year, NULL, 10);
 
     if (intYear < 1700)
-        return 144; // There were no banks this year. People kept currency hidden in their homes!
+        return -144; // There were no banks this year. People kept currency hidden in their homes!
     else if (intYear > 9999)
-        return 145; // The year format is invalid. It must have a maximum of 4 digits!
+        return -145; // The year format is invalid. It must have a maximum of 4 digits!
 
     if (intMonth < 1 || intMonth > 12)
-        return 146; // This month does not exist!
+        return -146; // This month does not exist!
 
     if (intDay < 1 || intDay > 31)
-        return 147; // This day does not exist!
+        return -147; // This day does not exist!
     else if (intDay == 31 && (intMonth == 2 || intMonth == 4 || intMonth == 6 || intMonth == 9 || intMonth == 11))
-        return 148; // This month has only 30 days!
+        return -148; // This month has only 30 days!
     else if (intDay == 30 && intMonth == 2)
-        return 149; // This month can have a maximum of 29 days!
+        return -149; // This month can have a maximum of 29 days!
     else if (intDay == 29 && intMonth == 2 && intYear % 4 != 0)
-        return 150; // This year February has a maximum of 28 days!
+        return -150; // This year February has a maximum of 28 days!
 
     Transaction* latestTransaction = getLatestTransaction(account);
     if (latestTransaction != NULL) {
@@ -345,10 +359,33 @@ int validDateForTransaction(const gchar *day, const gchar *month, const gchar *y
         if (intYear < latestDate.year ||
             (intYear == latestDate.year && intMonth < latestDate.month) ||
             (intYear == latestDate.year && intMonth == latestDate.month && intDay < latestDate.day))
-            return 151; // The last transaction was recorded in the future. You can't introduce now something that has already happened.
+            return -151; // The last transaction was recorded in the future. You can't introduce now something that has already happened.
     }
 
     return 1;
+}
+
+short availableAccountType(const char* accountType) {
+    if (strcmp(accountType, "savings") == 0 || strcmp(accountType, "checking") == 0 || strcmp(accountType, "credit") == 0)
+        return 1;
+    return 0;
+}
+
+void generateRandomIBAN(char* iban) {
+    const char* country_code = "RO";
+    const char* bank_id = "GLBK";
+    const char* branch_id = "0001";
+    char checkDigits[2];
+    char accountNumber[12];
+
+    strcpy(iban, country_code);
+    strcat(iban, checkDigits);
+    strcat(iban, bank_id);
+    strcat(iban, branch_id);
+    for (int i = 0; i < 12; i++) {
+        accountNumber[i] = '0' + (rand() % 10);
+    }
+    strcat(iban, accountNumber);
 }
 
 ////////////////////
@@ -358,14 +395,115 @@ int validDateForTransaction(const gchar *day, const gchar *month, const gchar *y
 ////////////////////
 
 
-Account* loginService(RepositoryFormat* repository, const char* username, const char* password) {
-    if (repository == NULL || username == NULL || password == NULL) {
-        return NULL; // Invalid input
-    }
+int loginService(RepositoryFormat* repository, const char* username, const char* password, Account** loggedUser) {
 
-    return loginRepository(repository, username, password);
+    if (repository == NULL)
+        return -301; // Internal problem with program database.
+    else if(username == NULL)
+        return -302; // Missing username input.
+    else if(password == NULL)
+        return -303; // Missing the password for your account.
+
+    if(strlen(username) > 20)
+        return -304; // Imputed account tag is too long! Maximum 20 characters.
+    else if(strlen(password) > 32)
+        return -305; // Imputed password is too long! Maximum 32 characters.
+    else if(!stringOnlyWithLetters(username))
+        return -306; // Account tag can have only letters!
+
+    *loggedUser = loginRepository(repository, username, password);
 }
 
+int createAccountService(RepositoryFormat* repository, const char* accountTag, const char* password, const char* passwordConfirm, const char* accountType, const char* phoneNumber,
+                         const char* firstName, const char* secondName, const char* day, const char* month, const char* year, Account** loggedAccount) {
+
+
+    if (repository == NULL)
+        return -311; // Repository is NULL
+    else if (accountTag == NULL)
+        return -312; // Missing account tag input
+    else if (password == NULL)
+        return -313; // Missing password input
+    else if (passwordConfirm == NULL)
+        return -314; // Missing password confirmation input
+    else if (accountType == NULL)
+        return -315; // Missing account type input
+    else if (phoneNumber == NULL)
+        return -316; // Missing phone number input
+    else if (firstName == NULL)
+        return -317; // Missing first name input
+    else if (secondName == NULL)
+        return -318; // Missing second name input
+    else if (day == NULL)
+        return -319; // Missing day input
+    else if (month == NULL)
+        return -320; // Missing month input
+    else if (year == NULL)
+        return -321; // Missing year input
+
+    if (accountTagUsed(repository, accountTag))
+        return -322; // Account tag already used
+
+    if (validDate(day, month, year) != 1) {
+        return -323; // Invalid birthday.
+    }
+
+    if(!stringOnlyWithLetters(accountTag))
+        return -324; // Account tag can have only letters!
+    else if(differentPassword(password, passwordConfirm))
+        return -325; // The passwords do not match!
+    else if(!availableAccountType(accountType))
+        return -326; // Invalid account type!\nAvailable types: savings, checking, credit.
+    else if(!stringOnlyWithLetters(firstName))
+        return -327; // First name can have only letters!
+    else if(!stringOnlyWithLetters(secondName))
+        return -328; // Second name can have only letters!
+    else if(!stringOnlyWithDigits(phoneNumber))
+        return -329; // Phone number can have only digits!"
+
+    Date birthday = createDate(atoi(day), atoi(month), atoi(year));
+
+    char iban[30];
+    while (1) {
+        generateRandomIBAN(iban);
+        if (!ibanUsedInRepository(repository, iban)) {
+            char* uniqueIBAN = malloc(strlen(iban) + 1);
+            strcpy(uniqueIBAN, iban);
+            break;
+        }
+    }
+
+    Account* newAccount = createAccount(0.0, accountTag, firstName, secondName, password, uniqueIBAN, phoneNumber, birthday);
+    free(uniqueIBAN);
+
+    if (newAccount == NULL)
+        return -330; // Failed to create an account
+
+    if (addAccountToRepository(repository, newAccount) != 1) {
+        destroyAccount(newAccount);
+        free(newAccount);
+        return -331; // Failed to add account to repository
+    }
+
+    // Create a new user account and link it to the new account
+    UserAccounts* newUserAccount = createUserAccount(0.0, accountType);
+    if (newUserAccount == NULL) {
+        destroyAccount(newAccount);
+        removeAccountFromRepository(repository, accountTag);
+        return -332; // Failed to create user account
+    }
+
+    int resultCode = addNewUserAccount(newAccount, newUserAccount);
+    if (resultCode != 1) {
+        destroyAccount(newAccount);
+        removeAccountFromRepository(repository, accountTag);
+        destroyUserAccount(newUserAccount);
+        free(newUserAccount);
+        return resultCode; // Failed to add user account
+    }
+
+    loggedAccount = newAccount;
+}
 
 // getTransactions
 // getAccountStatement
