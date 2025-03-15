@@ -236,51 +236,6 @@ short differentPassword(const gchar *password1, const gchar *password2){
     return 0;
 }
 
-short validDateWithBypass(const gchar *day, const gchar *month, const gchar *year){ // bypass means you can leave the fields blank
-
-    if(!stringOnlyWithDigits(day)){
-        return -101; // The day need to be a number!
-    }
-    else if(!stringOnlyWithDigits(month)){
-        return -102; // The month need to be a number!
-    }
-    else if(!stringOnlyWithDigits(year)){
-        return -103; // The year need to be a number
-    }
-
-    guint64 intDay = g_ascii_strtoull(day, NULL, 10); // transform a string formatted from digits to an integer
-    guint64 intMonth = g_ascii_strtoull(month, NULL, 10); // this function is from gtk input options
-    guint64 intYear = g_ascii_strtoull(year, NULL, 10);
-
-    if(strlen(year) != 0) {
-        if (intYear < 1700) {
-            return -104; // The entered year is far too far away!
-        } else if (intYear > 2006) {
-            return -105; // You do not have a minimum age to open an account!
-        }
-    }
-
-    if(strlen(month) != 0) {
-        if (intMonth < 1 || intMonth > 12) {
-            return -106; // The month does not exist!
-        }
-    }
-
-    if(strlen(day) != 0) {
-        if (intDay < 1 || intDay > 31) {
-            return -107; // The day does not exist!
-        } else if (intDay == 31 && (intMonth == 2 || intMonth == 4 || intMonth == 6 || intMonth == 9 || intMonth == 11)) {
-            return -108; // This month has only 30 days!
-        } else if (intDay == 30 && intMonth == 2) {
-            return -109; // The month can have a maximum of 29 days!
-        } else if (intDay == 29 && intMonth == 2 && intYear % 4 != 0) {
-            return -110; // "The year February has a maximum of 28 days!"
-        }
-    }
-
-    return 1;
-}
-
 short validDate(const gchar *day, const gchar *month, const gchar *year){ // available date means it is valid inside the calendar
 
     if(!stringOnlyWithDigits(day))
@@ -504,9 +459,57 @@ int createAccountService(RepositoryFormat* repository, const char* accountTag, c
     *loggedAccount = newAccount;
 }
 
-// getTransactions
-// getAccountStatement
+int deleteAccountService(RepositoryFormat* repository, Account** loggedAccount){
+    return removeAccountFromRepository(repository, getAccountTag(*loggedAccount));
+}
 
-// createAccount
-// editAccount
-// deleteAccount
+int editAccountService(Account** loggedAccount, const char* currentPassword, const char* password, const char* passwordConfirm, const char* accountType, const char* phoneNumber,
+                         const char* firstName, const char* secondName, const char* day, const char* month, const char* year) {
+
+    if(differentPassword(currentPassword, getAccountPassword(*loggedAccount)))
+        return -341; // The imputed password is wrong!
+    else if(differentPassword(password, passwordConfirm))
+        return -342; // The passwords do not match!
+    else if(!availableAccountType(accountType) && accountType != NULL)
+        return -343; // Invalid account type!\nAvailable types: savings, checking, credit.
+    else if(!stringOnlyWithLetters(firstName) && firstName != NULL)
+        return -344; // First name can have only letters!
+    else if(!stringOnlyWithLetters(secondName) && secondName != NULL)
+        return -345; // Second name can have only letters!
+    else if(!stringOnlyWithDigits(phoneNumber) && phoneNumber != NULL)
+        return -346; // Phone number can have only digits!
+
+//    Date accountBirthday = getAccountBirthday(*loggedAccount);
+//    int newDay, newMonth, newYear;
+//
+//    if(day == NULL)
+//        newDay = getDay(accountBirthday);
+//    else
+//        newDay = atoi(day);
+//
+//    if(month == NULL)
+//        newMonth = getMonth(accountBirthday);
+//    else
+//        newMonth = atoi(month);
+//
+//    if(year == NULL)
+//        newYear = getYear(accountBirthday);
+//    else
+//        newYear = atoi(year);
+//
+//    if (validDate(day, month, year) != 1) {
+//        return -347; // Invalid birthday.
+//    }
+//
+//    Date newBirthday = createDate(newDay, newMonth, newYear);
+//    setAccountBirthday(*loggedAccount, newBirthday);
+
+    if (password != NULL)
+        setAccountPassword(*loggedAccount, password);
+    if (phoneNumber != NULL)
+        setAccountPhoneNumber(*loggedAccount, phoneNumber);
+    if (firstName != NULL)
+        setAccountFirstName(*loggedAccount, firstName);
+    if (secondName != NULL)
+        setAccountSecondName(*loggedAccount, secondName);
+}
